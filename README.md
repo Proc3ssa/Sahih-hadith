@@ -1,73 +1,135 @@
-# Welcome to your Lovable project
+# AWS Serverless Hadith Search API
 
-## Project info
+## Overview
 
-**URL**: https://lovable.dev/projects/3b3eb1c0-2f20-402d-bcbf-767256595692
+This project provides a simple serverless API for retrieving Hadiths
+based on user queries. The API is designed to simulate an AI-like
+behavior where user queries such as "honesty" or "charity" return
+related Hadiths.
 
-## How can I edit this code?
+The system is built using AWS serverless technologies, ensuring
+scalability, reliability, and minimal operational overhead.
 
-There are several ways of editing your application.
+------------------------------------------------------------------------
 
-**Use Lovable**
+## Architecture
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/3b3eb1c0-2f20-402d-bcbf-767256595692) and start prompting.
+The system uses the following components: 1. **AWS Lambda**: Hosts the
+serverless function that processes user queries and returns Hadith
+results. 2. **Amazon API Gateway**: Serves as the entry point for HTTP
+requests to the Lambda function. 3. **Amazon S3**: Is 
+used to store static assets. 4. **AWS IAM**:
+Provides secure access control to the Lambda function and API Gateway
+resources. 5. **Amazon CloudWatch**: Used for logging, monitoring, and
+debugging the Lambda function.
 
-Changes made via Lovable will be committed automatically to this repo.
+------------------------------------------------------------------------
 
-**Use your preferred IDE**
+## AWS Services Used
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### 1. AWS Lambda
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+-   Executes the serverless function in response to API requests.
+-   Automatically scales based on demand.
+-   Written in Node.js with modern JavaScript.
 
-Follow these steps:
+### 2. Amazon API Gateway
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+-   Provides a secure HTTP endpoint for users to send requests.
+-   Integrates directly with Lambda.
+-   Handles request validation, throttling, and CORS configuration.
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### 3. AWS IAM (Identity and Access Management)
 
-# Step 3: Install the necessary dependencies.
-npm i
+-   Manages roles and permissions for Lambda and API Gateway.
+-   Ensures least-privilege access control.
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
 
-**Edit a file directly in GitHub**
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
 
-**Use GitHub Codespaces**
+### 5. Amazon S3
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+-   Can store front-end files or other assets that interact with the
+    API.
 
-## What technologies are used for this project?
+------------------------------------------------------------------------
 
-This project is built with:
+## Setup Instructions
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Prerequisites
 
-## How can I deploy this project?
+-   AWS Account
+-   AWS CLI installed and configured
+-   Node.js installed
 
-Simply open [Lovable](https://lovable.dev/projects/3b3eb1c0-2f20-402d-bcbf-767256595692) and click on Share -> Publish.
+### Steps
 
-## Can I connect a custom domain to my Lovable project?
+1.  Clone this repository:
 
-Yes, you can!
+    ``` bash
+    git clone <your-repository-url>
+    cd <repository-folder>
+    ```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+2.  Install dependencies (if any):
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+    ``` bash
+    npm install
+    ```
+
+3.  Deploy Lambda function:
+
+    -   Zip your code:
+
+        ``` bash
+        zip -r function.zip index.js
+        ```
+
+    -   Upload the ZIP file in AWS Lambda console or use AWS CLI.
+
+4.  Create API Gateway:
+
+    -   Set up a new REST API or HTTP API.
+    -   Connect it to your Lambda function.
+
+5.  Assign IAM Role:
+
+    -   Attach a role to the Lambda function with permissions for
+        CloudWatch logging.
+
+6.  Test the API:
+
+    -   Example request:
+
+        ``` bash
+        curl "https://<api-id>.execute-api.<region>.amazonaws.com/hadith?q=honesty"
+        ```
+
+------------------------------------------------------------------------
+
+## Example Queries
+
+-   `/api?q=honesty` → Returns Hadiths about honesty.
+-   `/api?q=charity` → Returns Hadiths about charity.
+-   `/api?q=patience` → Returns "No hadith found for this query."
+
+------------------------------------------------------------------------
+
+## Screenshots
+
+![Screenshot of AWS Serverless Hadith Search API in action](./screenshots/1.png)
+
+------------------------------------------------------------------------
+
+## Author
+
+**Name:** Faisal\
+**Role:** Developer\
+**Email:** <pros3sa@gmail.com>
+
+------------------------------------------------------------------------
+
+## License
+
+This project is open-source. You are free to use and modify it as
+needed.

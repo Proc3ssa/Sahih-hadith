@@ -10,18 +10,21 @@ related Hadiths.
 The system is built using AWS serverless technologies, ensuring
 scalability, reliability, and minimal operational overhead.
 
+### Link to hosted app
+https://d30t5tjr4vced5.cloudfront.net/
+
 ------------------------------------------------------------------------
 
 ## Architecture
 
-The system uses the following components: 1. **AWS Lambda**: Hosts the
-serverless function that processes user queries and returns Hadith
-results. 2. **Amazon API Gateway**: Serves as the entry point for HTTP
-requests to the Lambda function. 3. **Amazon S3**: Is 
-used to store static assets. 4. **AWS IAM**:
-Provides secure access control to the Lambda function and API Gateway
-resources. 5. **Amazon CloudWatch**: Used for logging, monitoring, and
-debugging the Lambda function.
+The system uses the following components:
+
+1. **AWS Lambda**: Hosts the serverless function that processes user queries and returns Hadith results.
+2. **Amazon API Gateway**: Serves as the entry point for HTTP requests to the Lambda function.
+3. **Amazon S3**: Stores static assets such as front-end files.
+4. **AWS IAM**: Provides secure access control to the Lambda function and API Gateway resources.
+5. **Amazon CloudWatch**: Used for logging, monitoring, and debugging the Lambda function.
+6. **Amazon CloudFront**: Distributes static assets globally with low latency and provides a secure, scalable CDN for the hosted app.
 
 ------------------------------------------------------------------------
 
@@ -67,11 +70,11 @@ debugging the Lambda function.
 1.  Clone this repository:
 
     ``` bash
-    git clone <your-repository-url>
-    cd <repository-folder>
+    git clone https://github.com/Proc3ssa/sahih-hadith.git
+    cd sahih-hadith
     ```
 
-2.  Install dependencies (if any):
+2.  Install dependencies:
 
     ``` bash
     npm install
@@ -79,10 +82,11 @@ debugging the Lambda function.
 
 3.  Deploy Lambda function:
 
-    -   Zip your code:
+    -  
 
-        ``` bash
-        zip -r function.zip index.js
+        ``` javascript
+            inside lanbda funtion.mjs
+        
         ```
 
     -   Upload the ZIP file in AWS Lambda console or use AWS CLI.
@@ -99,10 +103,10 @@ debugging the Lambda function.
 
 6.  Test the API:
 
-    -   Example request:
+    -   Lambda request url:
 
         ``` bash
-        curl "https://<api-id>.execute-api.<region>.amazonaws.com/hadith?q=honesty"
+        curl "https://jf2gf47ttf.execute-api.us-east-1.amazonaws.com/hadith?q=honesty"
         ```
 
 ------------------------------------------------------------------------

@@ -24,7 +24,7 @@ export const ChatInterface = () => {
   ]);
   const [input, setInput] = useState("");
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim()) return;
 
     const userMessage: Message = {
@@ -35,20 +35,33 @@ export const ChatInterface = () => {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    setInput("");
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      // 🔹 Call your AWS API Gateway endpoint
+      const res = await fetch(
+        `https://jf2gf47ttf.execute-api.us-east-1.amazonaws.com/hadith?q=${encodeURIComponent(input)}`
+      );
+      const data = await res.json();
+
       const response: Message = {
         id: (Date.now() + 1).toString(),
-        content: "Thank you for your question about Islamic teachings. I'm processing your inquiry and will provide you with relevant hadith references and explanations.",
+        content: data.result || "I couldn’t find a relevant hadith for this query.",
         isUser: false,
         timestamp: new Date(),
-        hadithRef: "Sahih Bukhari 1:1"
+        hadithRef: data.hadithRef || "Sahih Reference", // optional, adjust if Lambda returns it
       };
-      setMessages(prev => [...prev, response]);
-    }, 1000);
 
-    setInput("");
+      setMessages(prev => [...prev, response]);
+    } catch (error) {
+      const errorMessage: Message = {
+        id: (Date.now() + 2).toString(),
+        content: "⚠️ Error fetching hadith. Please try again later.",
+        isUser: false,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    }
   };
 
   return (
@@ -74,7 +87,7 @@ export const ChatInterface = () => {
                     <span className="text-sm font-medium text-primary">Sahih Assistant</span>
                   </div>
                 )}
-                <p className="text-sm leading-relaxed">{message.content}</p>
+                <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
                 {message.hadithRef && (
                   <div className="mt-3 pt-3 border-t border-border/50">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -112,6 +125,10 @@ export const ChatInterface = () => {
           </Button>
         </div>
       </div>
+      
+      <footer className="text-center py-2 text-xs text-muted-foreground border-t border-border/30 bg-background/80">
+        &copy; Faisal 2025
+      </footer>
     </div>
   );
 };

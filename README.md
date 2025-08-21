@@ -1,4 +1,4 @@
-# AWS Serverless Hadith Search API
+# AWS Serverless _Hadith_ Search APP
 
 ## Overview
 

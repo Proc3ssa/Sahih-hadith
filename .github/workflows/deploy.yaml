@@ -3,7 +3,7 @@ name: Deploy React App to S3 + CloudFront
 on:
   push:
     branches:
-      - main  # or your deploy branch
+      - main
 
 jobs:
   deploy:
@@ -16,15 +16,15 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
       - name: Install Dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Build React App
+      - name: Build App
         run: npm run build
 
-      # Configure AWS credentials once
+      # Configure AWS creds once for all AWS CLI steps
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -32,12 +32,28 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Deploy to S3
-        run: aws s3 sync dist/ s3://$S3_BUCKET_NAME --delete
+      # Guard checks so we fail with a clear message
+      - name: Verify dist/ and bucket
         env:
-          S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+        run: |
+          if [ ! -d dist ]; then
+            echo "❌ dist/ not found. Did the build succeed?"; ls -la; exit 1
+          fi
+          if [ -z "$S3_BUCKET" ]; then
+            echo "❌ Secret S3_BUCKET is empty or not set."; exit 1
+          fi
+          echo "✅ Using bucket: $S3_BUCKET"
+          ls -la dist | head -n 50
 
-      - name: Invalidate CloudFront Cache
-        run: aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
+      - name: Sync to S3
         env:
-          CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+        run: aws s3 sync dist/ s3://$S3_BUCKET --delete
+
+      # Optional: invalidate CloudFront (leave it if you want instant refresh)
+      - name: Invalidate CloudFront
+        if: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID != '' }}
+        env:
+          CF_DIST_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
+        run: aws cloudfront create-invalidation --distribution-id "$CF_DIST_ID" --paths "/index.html"

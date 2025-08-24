@@ -1,59 +1,66 @@
-name: Deploy React App to S3 + CloudFront
+name: Deploy React App to S3
 
 on:
   push:
     branches:
-      - main
+      - main # or "master" if that's your default branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
+      # 1. Checkout repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      # 2. Setup Node.js
+      - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Install Dependencies
-        run: npm ci
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: npm install
 
-      - name: Build App
+      # 4. Build React App
+      - name: Build React App
         run: npm run build
 
-      # Configure AWS creds once for all AWS CLI steps
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      # 5. Debug - Show working directory
+      - name: Print working directory
+        run: pwd
+
+      # 6. Debug - List root files
+      - name: List files in repo root
+        run: ls -la
+
+      # 7. Debug - List build folder contents
+      - name: List files in build folder
+        run: ls -la build || echo "Build folder not found"
+
+      # 8. Deploy to S3
+      - name: Deploy to S3
+        uses: jakejarvis/s3-sync-action@v0.5.1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      # Guard checks so we fail with a clear message
-      - name: Verify dist/ and bucket
+          args: --delete
         env:
-          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+          AWS_S3_BUCKET: ${{ secrets.S3_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          SOURCE_DIR: dist
+
+      # 9. Invalidate CloudFront cache (only if you set CLOUDFRONT_DISTRIBUTION_ID)
+      - name: Invalidate CloudFront cache
+        if: ${{ env.CLOUDFRONT_DISTRIBUTION_ID != '' }}
         run: |
-          if [ ! -d dist ]; then
-            echo "❌ dist/ not found. Did the build succeed?"; ls -la; exit 1
-          fi
-          if [ -z "$S3_BUCKET" ]; then
-            echo "❌ Secret S3_BUCKET is empty or not set."; exit 1
-          fi
-          echo "✅ Using bucket: $S3_BUCKET"
-          ls -la dist | head -n 50
-
-      - name: Sync to S3
+          aws cloudfront create-invalidation \
+            --distribution-id $CLOUDFRONT_DISTRIBUTION_ID \
+            --paths "/*"
         env:
-          S3_BUCKET: ${{ secrets.S3_BUCKET }}
-        run: aws s3 sync dist/ s3://$S3_BUCKET --delete
-
-      # Optional: invalidate CloudFront (leave it if you want instant refresh)
-      - name: Invalidate CloudFront
-        if: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID != '' }}
-        env:
-          CF_DIST_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
-        run: aws cloudfront create-invalidation --distribution-id "$CF_DIST_ID" --paths "/index.html"
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}

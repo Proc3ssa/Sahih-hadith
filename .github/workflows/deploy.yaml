@@ -3,27 +3,44 @@ name: Deploy React App to S3
 on:
   push:
     branches:
-      - main   # or master
+      - main   # or "master" if that's your default branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2. Setup Node.js
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
+      # 3. Install dependencies
       - name: Install dependencies
         run: npm install
 
+      # 4. Build React App
       - name: Build React App
         run: npm run build
 
+      # 5. Debug - Show working directory
+      - name: Print working directory
+        run: pwd
+
+      # 6. Debug - List root files
+      - name: List files in repo root
+        run: ls -la
+
+      # 7. Debug - List build folder contents
+      - name: List files in build folder
+        run: ls -la build || echo "⚠️ Build folder not found"
+
+      # 8. Deploy to S3
       - name: Deploy to S3
         uses: jakejarvis/s3-sync-action@v0.5.1
         with:
@@ -33,4 +50,4 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
-          SOURCE_DIR: ./build
+          SOURCE_DIR: build
